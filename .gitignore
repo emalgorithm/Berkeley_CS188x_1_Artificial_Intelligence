@@ -92,5 +92,5 @@ ENV/
 
 .pyc
 
-.idea/*
+.idea/
 .idea/vcs.xml

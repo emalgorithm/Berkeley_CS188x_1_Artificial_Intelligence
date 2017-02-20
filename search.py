@@ -73,52 +73,6 @@ def tinyMazeSearch(problem):
     return  [s, s, w, s, w, w, s, w]
 
 
-def treeSearch(problem, strategy):
-    withPriority = isinstance(strategy, util.PriorityQueue)
-
-    state = problem.getStartState()
-
-    if withPriority:
-        strategy.push(state, 0)
-    else:
-        strategy.push(state)
-
-    # Dictionary that maps from a state to a tuple (parentState, actionFromParentToChild,
-    # totalCostOfChild)
-    visited = {state: (state, None, 0)}
-
-    while not problem.isGoalState(state):
-        #print(state)
-        state = strategy.pop()
-        (_, _, stateCost) = visited[state]
-
-        for (succState, action, cost) in problem.getSuccessors(state):
-            if succState not in visited:
-                visited[succState] = (state, action, cost)
-
-                totalCost = stateCost + cost
-
-                if withPriority:
-                    strategy.push(succState, totalCost)
-                else:
-                    strategy.push(succState)
-
-    # Reconstruct sequence of actions traversing parent states
-    actions = []
-
-    while not state is problem.getStartState():
-        #print("Reversing: " + str(state))
-        (parent, action, _) = visited[state]
-        actions.append(action)
-        state = parent
-
-    actions.reverse()
-
-    #print("Actions: " + str(actions))
-
-    return actions
-
-
 def depthFirstSearch(problem):
     """
     Search the deepest nodes in the search tree first.
@@ -148,9 +102,49 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return treeSearch(problem, util.PriorityQueue(), heuristic)
 
+# General tree search algorithm which takes a queueing strategy as argument
+def treeSearch(problem, strategy, heuristic=nullHeuristic):
+    withPriority = isinstance(strategy, util.PriorityQueue)
+
+    state = problem.getStartState()
+
+    if withPriority:
+        strategy.push(state, heuristic(state, problem))
+    else:
+        strategy.push(state)
+
+    # Dictionary that maps from a state to a tuple (parentState, actionFromParentToChild,
+    # backwardCostOfChild). Used to reconstruct sequence of actions
+    visited = {state: (state, None, 0)}
+
+    while not problem.isGoalState(state):
+        state = strategy.pop()
+        (_, _, stateCost) = visited[state]
+
+        for (succState, action, cost) in problem.getSuccessors(state):
+            if succState not in visited:
+                visited[succState] = (state, action, cost)
+
+                backwardCost = stateCost + cost
+
+                if withPriority:
+                    strategy.push(succState, backwardCost + heuristic(succState, problem))
+                else:
+                    strategy.push(succState)
+
+    # Reconstruct sequence of actions traversing parent states
+    actions = []
+
+    while not state is problem.getStartState():
+        (parent, action, _) = visited[state]
+        actions.append(action)
+        state = parent
+
+    actions.reverse()
+
+    return actions
 
 # Abbreviations
 bfs = breadthFirstSearch

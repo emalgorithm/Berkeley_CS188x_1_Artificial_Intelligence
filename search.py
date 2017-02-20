@@ -74,27 +74,41 @@ def tinyMazeSearch(problem):
 
 
 def treeSearch(problem, strategy):
+    withPriority = isinstance(strategy, util.PriorityQueue)
+
     state = problem.getStartState()
-    strategy.push(state)
-    from game import Directions
-    # Dictionary that maps from a state to a tuple containing its parent and the action to get there
-    visited = {state: (state, Directions.SOUTH)}
+
+    if withPriority:
+        strategy.push(state, 0)
+    else:
+        strategy.push(state)
+
+    # Dictionary that maps from a state to a tuple (parentState, actionFromParentToChild,
+    # totalCostOfChild)
+    visited = {state: (state, None, 0)}
 
     while not problem.isGoalState(state):
         #print(state)
         state = strategy.pop()
+        (_, _, stateCost) = visited[state]
 
         for (succState, action, cost) in problem.getSuccessors(state):
             if succState not in visited:
-                visited[succState] = (state, action)
-                strategy.push(succState)
+                visited[succState] = (state, action, cost)
+
+                totalCost = stateCost + cost
+
+                if withPriority:
+                    strategy.push(succState, totalCost)
+                else:
+                    strategy.push(succState)
 
     # Reconstruct sequence of actions traversing parent states
     actions = []
 
     while not state is problem.getStartState():
         #print("Reversing: " + str(state))
-        (parent, action) = visited[state]
+        (parent, action, _) = visited[state]
         actions.append(action)
         state = parent
 
@@ -123,8 +137,7 @@ def breadthFirstSearch(problem):
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return treeSearch(problem, util.PriorityQueue())
 
 def nullHeuristic(state, problem=None):
     """

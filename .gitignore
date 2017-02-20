@@ -93,3 +93,4 @@ ENV/
 .pyc
 
 .idea/*
+.idea/vcs.xml

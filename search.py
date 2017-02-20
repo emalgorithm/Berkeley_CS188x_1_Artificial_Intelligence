@@ -19,6 +19,7 @@ Pacman agents (in searchAgents.py).
 
 import util
 
+
 class SearchProblem:
     """
     This class outlines the structure of a search problem, but doesn't implement
@@ -70,7 +71,7 @@ def tinyMazeSearch(problem):
     from game import Directions
     s = Directions.SOUTH
     w = Directions.WEST
-    return  [s, s, w, s, w, w, s, w]
+    return [s, s, w, s, w, w, s, w]
 
 
 def depthFirstSearch(problem):
@@ -85,13 +86,16 @@ def depthFirstSearch(problem):
     """
     return treeSearch(problem, util.Stack())
 
+
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     return treeSearch(problem, util.Queue())
 
+
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     return treeSearch(problem, util.PriorityQueue())
+
 
 def nullHeuristic(state, problem=None):
     """
@@ -100,9 +104,11 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
+
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     return treeSearch(problem, util.PriorityQueue(), heuristic)
+
 
 # General tree search algorithm which takes a queueing strategy as argument
 def treeSearch(problem, strategy, heuristic=nullHeuristic):
@@ -119,15 +125,18 @@ def treeSearch(problem, strategy, heuristic=nullHeuristic):
     # backwardCostOfChild). Used to reconstruct sequence of actions
     visited = {state: (state, None, 0)}
 
-    while not problem.isGoalState(state):
+    while True:
         state = strategy.pop()
+
+        if problem.isGoalState(state):
+            break
+
         (_, _, stateCost) = visited[state]
 
         for (succState, action, cost) in problem.getSuccessors(state):
             if succState not in visited:
-                visited[succState] = (state, action, cost)
-
                 backwardCost = stateCost + cost
+                visited[succState] = (state, action, backwardCost)
 
                 if withPriority:
                     strategy.push(succState, backwardCost + heuristic(succState, problem))
@@ -137,14 +146,16 @@ def treeSearch(problem, strategy, heuristic=nullHeuristic):
     # Reconstruct sequence of actions traversing parent states
     actions = []
 
-    while not state is problem.getStartState():
+    while state is not problem.getStartState():
         (parent, action, _) = visited[state]
+        print (str(parent) + " " + str(action))
         actions.append(action)
         state = parent
 
     actions.reverse()
 
     return actions
+
 
 # Abbreviations
 bfs = breadthFirstSearch

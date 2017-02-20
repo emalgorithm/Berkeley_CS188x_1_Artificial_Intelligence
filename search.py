@@ -124,7 +124,7 @@ def treeSearch(problem, strategy, heuristic=nullHeuristic):
     else:
         strategy.push(fullState)
 
-    visited = {state: 1}
+    visited = {}
 
     while True:
         (state, actions, backwardCost) = strategy.pop()
@@ -132,16 +132,19 @@ def treeSearch(problem, strategy, heuristic=nullHeuristic):
         if problem.isGoalState(state):
             return actions
 
-        for (succState, action, cost) in problem.getSuccessors(state):
-            if succState not in visited:
-                succBackwardCost = backwardCost + cost
-                visited[succState] = 1
-                fullState = (succState, actions + [action], succBackwardCost)
+        if state in visited:
+            continue
 
-                if withPriority:
-                    strategy.push(fullState, succBackwardCost + heuristic(succState, problem))
-                else:
-                    strategy.push(fullState)
+        visited[state] = 1
+
+        for (succState, action, cost) in problem.getSuccessors(state):
+            succBackwardCost = backwardCost + cost
+            fullState = (succState, actions + [action], succBackwardCost)
+
+            if withPriority:
+                strategy.push(fullState, succBackwardCost + heuristic(succState, problem))
+            else:
+                strategy.push(fullState)
 
 
 

@@ -147,7 +147,6 @@ def treeSearch(problem, strategy, heuristic=nullHeuristic):
                 strategy.push(fullState)
 
 
-
 # Abbreviations
 bfs = breadthFirstSearch
 dfs = depthFirstSearch

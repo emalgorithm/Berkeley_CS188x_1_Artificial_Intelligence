@@ -116,34 +116,30 @@ def treeSearch(problem, strategy, heuristic=nullHeuristic):
 
     state = problem.getStartState()
 
-    # The full state includes a state and the actions to get there
-    fullState = (state, [])
+    # The full state includes a state, list of actions to get there and backward cost
+    fullState = (state, [], 0)
 
     if withPriority:
         strategy.push(fullState, heuristic(state, problem))
     else:
         strategy.push(fullState)
 
-    # Dictionary that maps from a state to a tuple (parentState, actionFromParentToChild,
-    # backwardCostOfChild). Used to reconstruct sequence of actions
-    visited = {state: (state, None, 0)}
+    visited = {state: 1}
 
     while True:
-        (state, actions) = strategy.pop()
+        (state, actions, backwardCost) = strategy.pop()
 
         if problem.isGoalState(state):
             return actions
 
-        (_, _, stateCost) = visited[state]
-
         for (succState, action, cost) in problem.getSuccessors(state):
             if succState not in visited:
-                backwardCost = stateCost + cost
-                visited[succState] = (state, action, backwardCost)
-                fullState = (succState, actions + [action])
+                succBackwardCost = backwardCost + cost
+                visited[succState] = 1
+                fullState = (succState, actions + [action], succBackwardCost)
 
                 if withPriority:
-                    strategy.push(fullState, backwardCost + heuristic(succState, problem))
+                    strategy.push(fullState, succBackwardCost + heuristic(succState, problem))
                 else:
                     strategy.push(fullState)
 

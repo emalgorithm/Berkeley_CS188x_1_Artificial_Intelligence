@@ -370,7 +370,7 @@ def cornersHeuristic(state, problem):
     """
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    return numberOfCornersToVisitHeuristic(state, problem)
+    return furtherCornerHeuristic(state, problem)
 
 
 # 1908 nodes expanded
@@ -379,8 +379,21 @@ def numberOfCornersToVisitHeuristic(state, _):
 
     return len(visitedCorners) - sum(visitedCorners)
 
+# 1136 nodes expanded
+def furtherCornerHeuristic(state, problem):
+    corners = problem.corners  # These are the corner coordinates
+    position, visitedCorners = state
+    furtherDistance = 0
 
-# 502 nodes expanded. Inconsistent: See why
+    for ind, f in enumerate(visitedCorners):
+        if not f:
+            distance = manhattanDistance(position, corners[ind])
+            furtherDistance = max(furtherDistance, distance)
+
+    return furtherDistance
+
+
+# 502 nodes expanded. Inconsistent: Making one step could cause a drop in the heuristic of 2
 def sumOfDistancesToCornersToVisitHeuristic(state, problem):
     corners = problem.corners  # These are the corner coordinates
     position, visitedCorners = state
@@ -394,7 +407,7 @@ def sumOfDistancesToCornersToVisitHeuristic(state, problem):
     return distanceSum
 
 
-# 502 nodes expanded. Inconsistent: See why
+# 502 nodes expanded. Inconsistent: Making one step could cause a drop in the heuristic of 2
 def closestFirstHeuristic(state, problem):
     corners = problem.corners  # These are the corner coordinates
     position, visitedCorners = state

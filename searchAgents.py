@@ -370,31 +370,58 @@ def cornersHeuristic(state, problem):
     """
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    return sumOfDistancesToCornersToVisitHeuristic(state, problem)
+    return numberOfCornersToVisitHeuristic(state, problem)
 
 
-def numberOfCornersToVisitHeuristic(state, problem):
+# 1908 nodes expanded
+def numberOfCornersToVisitHeuristic(state, _):
     _, visitedCorners = state
 
     return len(visitedCorners) - sum(visitedCorners)
 
 
+# 502 nodes expanded. Inconsistent: See why
 def sumOfDistancesToCornersToVisitHeuristic(state, problem):
     corners = problem.corners  # These are the corner coordinates
     position, visitedCorners = state
     distanceSum = 0
 
-    for f, ind in enumerate(visitedCorners):
-        # Shoulnd't it be "if not f:" ?
-        if f:
+    for ind, f in enumerate(visitedCorners):
+        if not f:
             distance = manhattanDistance(position, corners[ind])
             distanceSum += distance
 
     return distanceSum
 
 
+# 502 nodes expanded. Inconsistent: See why
+def closestFirstHeuristic(state, problem):
+    corners = problem.corners  # These are the corner coordinates
+    position, visitedCorners = state
+    distanceSum = 0
+
+    visitedCornersList = list(visitedCorners)
+
+    while not all(visitedCornersList):
+        closestDistance = 0
+        closestIndex = -1
+
+        for ind, f in enumerate(visitedCornersList):
+            if not f:
+                distance = manhattanDistance(position, corners[ind])
+                if closestIndex == -1 or closestDistance > distance:
+                    closestDistance = distance
+                    closestIndex = ind
+
+        distanceSum += closestDistance
+        visitedCornersList[closestIndex] = True
+
+    return distanceSum
+
+
 def manhattanDistance(xy1, xy2):
     return abs(xy1[0] - xy2[0]) + abs(xy1[1] - xy2[1])
+
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"

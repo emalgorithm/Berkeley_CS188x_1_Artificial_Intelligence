@@ -355,6 +355,8 @@ class CornersProblem(search.SearchProblem):
         return len(actions)
 
 
+# 1003 nodes expanded
+# Maximum of two heuristics
 def cornersHeuristic(state, problem):
     """
     A heuristic for the CornersProblem that you defined.
@@ -370,14 +372,9 @@ def cornersHeuristic(state, problem):
     """
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    return furtherCornerHeuristic(state, problem)
+    return max(furtherCornerHeuristic(state, problem), sumOfDistancesToCornersToVisitHeuristic(
+        state, problem))
 
-
-# 1908 nodes expanded
-def numberOfCornersToVisitHeuristic(state, _):
-    _, visitedCorners = state
-
-    return len(visitedCorners) - sum(visitedCorners)
 
 # 1136 nodes expanded
 def furtherCornerHeuristic(state, problem):
@@ -393,7 +390,9 @@ def furtherCornerHeuristic(state, problem):
     return furtherDistance
 
 
-# 502 nodes expanded. Inconsistent: Making one step could cause a drop in the heuristic of 2
+# 1271 nodes expanded
+# If we wouldn't divide by 2 at the end it would be inconsistent: making one step could cause a drop
+# in the heuristic of 2
 def sumOfDistancesToCornersToVisitHeuristic(state, problem):
     corners = problem.corners  # These are the corner coordinates
     position, visitedCorners = state
@@ -404,10 +403,12 @@ def sumOfDistancesToCornersToVisitHeuristic(state, problem):
             distance = manhattanDistance(position, corners[ind])
             distanceSum += distance
 
-    return distanceSum
+    return int (distanceSum / 2)
 
 
-# 502 nodes expanded. Inconsistent: Making one step could cause a drop in the heuristic of 2
+# 1271 nodes expanded
+# If we wouldn't divide by 2 at the end it would be inconsistent: making one step could cause a drop
+# in the heuristic of 2
 def closestFirstHeuristic(state, problem):
     corners = problem.corners  # These are the corner coordinates
     position, visitedCorners = state
@@ -429,7 +430,14 @@ def closestFirstHeuristic(state, problem):
         distanceSum += closestDistance
         visitedCornersList[closestIndex] = True
 
-    return distanceSum
+    return int (distanceSum / 2)
+
+
+# 1908 nodes expanded
+def numberOfCornersToVisitHeuristic(state, _):
+    _, visitedCorners = state
+
+    return len(visitedCorners) - sum(visitedCorners)
 
 
 def manhattanDistance(xy1, xy2):

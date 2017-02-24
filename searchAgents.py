@@ -549,33 +549,34 @@ def furtherFoodHeuristic(state, problem):
 
     return furtherFoodDist
 
-# 4115 nodes expanded, but slower than UCS.
-# Moreover, grader says it's inadmissible and/or inconsistent, but I am not sure why.
+
+# 4137 nodes expanded, but slower than UCS.
 def BFSfurtherFoodHeuristic(state, problem):
     position, foodGrid = state
     foodList = foodGrid.asList()
+    count = foodGrid.count()
 
     strategy = util.Queue()
     strategy.push(position)
 
-    visited = {}
     cost = {position: 0}
     furtherFoodDist = 0
+    foodSeen = 0
 
     while not strategy.isEmpty():
         currentPosition = strategy.pop()
 
         if currentPosition in foodList:
             furtherFoodDist = max(furtherFoodDist, cost[currentPosition])
+            foodSeen += 1
 
-        if currentPosition in visited:
-            continue
-
-        visited[currentPosition] = 1
+        if foodSeen == count:
+            break
 
         for successorPosition in getSuccessors(currentPosition, problem.walls):
-            cost[successorPosition] = cost[currentPosition] + 1
-            strategy.push(successorPosition)
+            if successorPosition not in cost:
+                cost[successorPosition] = cost[currentPosition] + 1
+                strategy.push(successorPosition)
 
     return furtherFoodDist
 

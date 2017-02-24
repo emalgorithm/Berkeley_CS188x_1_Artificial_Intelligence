@@ -534,9 +534,87 @@ def foodHeuristic(state, problem):
     Subsequent calls to this heuristic can access
     problem.heuristicInfo['wallCount']
     """
+
+    return BFSfurtherFoodHeuristic(state, problem)
+
+# 9551 nodes expanded
+def furtherFoodHeuristic(state, problem):
     position, foodGrid = state
-    "*** YOUR CODE HERE ***"
-    return 0
+    foodList = foodGrid.asList()
+    furtherFoodDist = 0
+
+    for food in foodList:
+        dist = manhattanDistance(position, food)
+        furtherFoodDist = max(furtherFoodDist, dist)
+
+    return furtherFoodDist
+
+# 4115 nodes expanded, but slower than UCS.
+# Moreover, grader says it's inadmissible and/or inconsistent, but I am not sure why.
+def BFSfurtherFoodHeuristic(state, problem):
+    position, foodGrid = state
+    foodList = foodGrid.asList()
+
+    strategy = util.Queue()
+    strategy.push(position)
+
+    visited = {}
+    cost = {position: 0}
+    furtherFoodDist = 0
+
+    while not strategy.isEmpty():
+        currentPosition = strategy.pop()
+
+        if currentPosition in foodList:
+            furtherFoodDist = max(furtherFoodDist, cost[currentPosition])
+
+        if currentPosition in visited:
+            continue
+
+        visited[currentPosition] = 1
+
+        for successorPosition in getSuccessors(currentPosition, problem.walls):
+            cost[successorPosition] = cost[currentPosition] + 1
+            strategy.push(successorPosition)
+
+    return furtherFoodDist
+
+
+def getSuccessors(position, walls):
+    successors = []
+    for direction in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
+        x,y = position
+        dx, dy = Actions.directionToVector(direction)
+        nextx, nexty = int(x + dx), int(y + dy)
+        if not walls[nextx][nexty]:
+            successors.append((nextx, nexty))
+    return successors
+
+
+# 11632 nodes expanded
+# If we wouldn't divide by foodGrid.count() at the end it would be inconsistent:
+# making one step could cause a drop of up to foodGrid.count() in the heuristic
+def SumOfDistancesToFoodsHeuristic(state, problem):
+    position, foodGrid = state
+    foodList = foodGrid.asList()
+    distSum = 0
+
+    if foodGrid.count() == 0:
+        return 0
+
+    for food in foodList:
+        dist = manhattanDistance(position, food)
+        distSum += dist
+
+    return distSum / foodGrid.count()
+
+
+# 12517 nodes expanded
+def countFoodsHeuristic(state, problem):
+    position, foodGrid = state
+
+    return foodGrid.count()
+
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"

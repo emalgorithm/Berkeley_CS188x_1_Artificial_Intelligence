@@ -370,35 +370,7 @@ def betterEvaluationFunction(currentGameState):
         dist = manhattanDistance(pos, ghost)
         closestGhostDist = min(closestGhostDist, dist)
 
-    return score - 2 * closestFoodDist + 5 * closestGhostDist - 15 * len(foodList)
-
-def closestFood(gameState, food):
-    position = gameState.getPacmanPosition()
-    foodList = food.asList()
-    count = food.count()
-
-    if count == 0:
-        return 0
-
-    strategy = util.Queue()
-    strategy.push(gameState)
-
-    cost = {position: 0}
-
-    while not strategy.isEmpty():
-        currentGameState = strategy.pop()
-        currentPosition = currentGameState.getPacmanPosition()
-
-        if currentPosition in foodList:
-            return cost[currentPosition]
-
-        actions = gameState.getLegalActions(0)
-        for action in actions:
-            successorGameState = currentGameState.generatePacmanSuccessor(action)
-            successorPosition = successorGameState.getPacmanPosition()
-            if successorPosition not in cost:
-                cost[successorPosition] = cost[currentPosition] + 1
-                strategy.push(successorGameState)
+    return score - 3 * closestFoodDist + 2 * closestGhostDist - 15 * len(foodList)
 
 # Abbreviation
 better = betterEvaluationFunction

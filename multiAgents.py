@@ -282,8 +282,55 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           All ghosts should be modeled as choosing uniformly at random from their
           legal moves.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # Return a tuple (bestAction, bestValue) for an agent from gameState according to minimax
+        # with the given depth
+        def value(gameState, agentIndex, depth):
+            if agentIndex == gameState.getNumAgents():
+                agentIndex = 0
+                depth -= 1
+
+            if depth == 0 or not gameState.getLegalActions(agentIndex):
+                return None, self.evaluationFunction(gameState)
+
+            # If the agent is pacman (agentIndex equals to 0), then maximize
+            if agentIndex == 0:
+                return maximize(gameState, agentIndex, depth)
+            # If the agent is a ghost, then minimize
+            else:
+                return None, minimize(gameState, agentIndex, depth)
+
+        # Return a tuple (maxAction, maxValue) for a maximizing agent from gameState according to
+        # expectimax with the given depth
+        def maximize(gameState, agentIndex, depth):
+            actions = gameState.getLegalActions(agentIndex)
+            maxValue = -sys.maxint - 1
+            maxAction = None
+
+            for action in actions:
+                successorGameState = gameState.generateSuccessor(agentIndex, action)
+                _, v = value(successorGameState, agentIndex + 1, depth)
+                if v > maxValue:
+                    maxValue = v
+                    maxAction = action
+
+            return maxAction, maxValue
+
+        # Return the expected value for a minimizing agent from gameState according to
+        # expectimax
+        def minimize(gameState, agentIndex, depth):
+            actions = gameState.getLegalActions(agentIndex)
+            expectedValue = 0.0
+            expectedAction = None
+
+            for action in actions:
+                successorGameState = gameState.generateSuccessor(agentIndex, action)
+                _, v = value(successorGameState, agentIndex + 1, depth)
+                expectedValue += (1.0 / len(actions)) * v
+
+            return expectedValue
+
+
+        return value(gameState, 0, self.depth)[0]
 
 def betterEvaluationFunction(currentGameState):
     """

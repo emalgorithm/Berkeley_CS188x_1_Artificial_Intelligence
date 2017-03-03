@@ -339,8 +339,66 @@ def betterEvaluationFunction(currentGameState):
 
       DESCRIPTION: <write something here so we know what you did>
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    pos = currentGameState.getPacmanPosition()
+    foodGrid = currentGameState.getFood()
+    ghostStates = currentGameState.getGhostStates()
+    scaredTimes = [ghostState.scaredTimer for ghostState in ghostStates]
+    score = currentGameState.getScore()
+
+    if currentGameState.isWin():
+        return 2000
+
+    if currentGameState.isLose():
+        return -2000
+
+    # Get distance to closest food
+    foodList = foodGrid.asList()
+    closestFoodDist = sys.maxint
+
+    for food in foodList:
+        dist = manhattanDistance(pos, food)
+        closestFoodDist = min(closestFoodDist, dist)
+
+    # Get distance to closest ghost
+    ghostsPositions = [ghostState.getPosition() for ghostState in ghostStates]
+    closestGhostDist = sys.maxint
+
+    if closestGhostDist <= 1:
+        return -2000
+
+    for ghost in ghostsPositions:
+        dist = manhattanDistance(pos, ghost)
+        closestGhostDist = min(closestGhostDist, dist)
+
+    return score - 2 * closestFoodDist + 5 * closestGhostDist - 15 * len(foodList)
+
+def closestFood(gameState, food):
+    position = gameState.getPacmanPosition()
+    foodList = food.asList()
+    count = food.count()
+
+    if count == 0:
+        return 0
+
+    strategy = util.Queue()
+    strategy.push(gameState)
+
+    cost = {position: 0}
+
+    while not strategy.isEmpty():
+        currentGameState = strategy.pop()
+        currentPosition = currentGameState.getPacmanPosition()
+
+        if currentPosition in foodList:
+            return cost[currentPosition]
+
+        actions = gameState.getLegalActions(0)
+        for action in actions:
+            successorGameState = currentGameState.generatePacmanSuccessor(action)
+            successorPosition = successorGameState.getPacmanPosition()
+            if successorPosition not in cost:
+                cost[successorPosition] = cost[currentPosition] + 1
+                strategy.push(successorGameState)
 
 # Abbreviation
 better = betterEvaluationFunction

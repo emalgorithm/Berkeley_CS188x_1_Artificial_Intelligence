@@ -10,7 +10,7 @@
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
 # Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
-
+import sys
 
 from util import manhattanDistance
 from game import Directions
@@ -40,7 +40,6 @@ class ReflexAgent(Agent):
         """
         # Collect legal moves and successor states
         legalMoves = gameState.getLegalActions()
-
         # Choose one of the best actions
         scores = [self.evaluationFunction(gameState, action) for action in legalMoves]
         bestScore = max(scores)
@@ -72,9 +71,32 @@ class ReflexAgent(Agent):
         newFood = successorGameState.getFood()
         newGhostStates = successorGameState.getGhostStates()
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+        score = successorGameState.getScore()
 
-        "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
+        # Get distance to closest food
+        newFoodList = newFood.asList()
+        closestFoodDist = sys.maxint
+
+        for food in newFoodList:
+            dist = manhattanDistance(newPos, food)
+            closestFoodDist = min(closestFoodDist, dist)
+
+        # Get distance to closest ghost
+        ghostsPositions = [ghostState.getPosition() for ghostState in newGhostStates]
+        closestGhostDist = sys.maxint
+
+        for ghost in ghostsPositions:
+            dist = manhattanDistance(newPos, ghost)
+            closestGhostDist = min(closestGhostDist, dist)
+
+        if closestGhostDist <= 1:
+            return -1000
+
+        if score > currentGameState.getScore() and closestGhostDist > 2:
+            return 1000
+
+        return score + closestGhostDist - 3 * closestFoodDist
+
 
 def scoreEvaluationFunction(currentGameState):
     """

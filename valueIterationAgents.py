@@ -67,7 +67,8 @@ class ValueIterationAgent(ValueEstimationAgent):
 
                 self.values[state] = maxValue
 
-            oldValues = self.values
+            for state in states:
+                oldValues[state] = self.values[state]
 
 
     def getValue(self, state):

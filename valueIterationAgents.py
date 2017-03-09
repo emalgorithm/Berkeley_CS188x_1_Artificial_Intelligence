@@ -53,16 +53,7 @@ class ValueIterationAgent(ValueEstimationAgent):
                 maxValue = 0 if mdp.isTerminal(state) else -10000.0
 
                 for action in actions:
-                    nextStatesAndProbs = self.mdp.getTransitionStatesAndProbs(state, action)
-                    value = 0.0
-
-                    for nextStateAndProb in nextStatesAndProbs:
-                        nextState, prob = nextStateAndProb
-                        reward = mdp.getReward(state, action, nextState)
-                        nextStateDiscountedValue = self.discount * oldValues[nextState]
-                        weightedValue = prob * (reward + nextStateDiscountedValue)
-                        value += weightedValue
-
+                    value = self.computeQValueFromAnyValues(state, action, oldValues)
                     maxValue = max(maxValue, value)
 
                 self.values[state] = maxValue
@@ -83,13 +74,20 @@ class ValueIterationAgent(ValueEstimationAgent):
           Compute the Q-value of action in state from the
           value function stored in self.values.
         """
+        return self.computeQValueFromAnyValues(state, action, self.values)
+
+    def computeQValueFromAnyValues(self, state, action, values):
+        """
+          Compute the Q-value of action in state from the
+          value function stored in self.values.
+        """
         nextStatesAndProbs = self.mdp.getTransitionStatesAndProbs(state, action)
         value = 0.0
 
         for nextStateAndProb in nextStatesAndProbs:
             nextState, prob = nextStateAndProb
             reward = self.mdp.getReward(state, action, nextState)
-            nextStateDiscountedValue = self.discount * self.values[nextState]
+            nextStateDiscountedValue = self.discount * values[nextState]
             weightedValue = prob * (reward + nextStateDiscountedValue)
             value += weightedValue
 

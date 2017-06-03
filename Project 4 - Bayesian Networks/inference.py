@@ -258,7 +258,13 @@ class ParticleFilter(InferenceModule):
         Storing your particles as a Counter (where there could be an associated
         weight with each position) is incorrect and may produce errors.
         """
-        "*** YOUR CODE HERE ***"
+        self.particles = []
+        numOfPos = len(self.legalPositions)
+        particlesPerPos = self.numParticles / numOfPos
+
+        for pos in self.legalPositions:
+            for i in range(particlesPerPos):
+                self.particles.append(pos)
 
     def observe(self, observation, gameState):
         """
@@ -290,8 +296,24 @@ class ParticleFilter(InferenceModule):
         noisyDistance = observation
         emissionModel = busters.getObservationDistribution(noisyDistance)
         pacmanPosition = gameState.getPacmanPosition()
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        distribution = util.Counter()
+        newParticles = []
+
+        for particlePos in self.particles:
+            distance = util.manhattanDistance(pacmanPosition, particlePos)
+            distribution[particlePos] += emissionModel[distance]
+
+        if noisyDistance is None:
+            for i in range(self.numParticles):
+                newParticles.append(self.getJailPosition())
+            self.particles = newParticles
+        elif distribution.totalCount() == 0:
+            self.initializeUniformly(gameState)
+        else:
+            for i in range(self.numParticles):
+                newParticles.append(util.sample(distribution))
+            self.particles = newParticles
 
     def elapseTime(self, gameState):
         """
@@ -317,8 +339,15 @@ class ParticleFilter(InferenceModule):
         essentially converts a list of particles into a belief distribution (a
         Counter object)
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        dist = util.Counter()
+
+        for particlePos in self.particles:
+            dist[particlePos] += 1
+
+        dist.normalize()
+
+        return dist
+
 
 class MarginalInference(InferenceModule):
     """

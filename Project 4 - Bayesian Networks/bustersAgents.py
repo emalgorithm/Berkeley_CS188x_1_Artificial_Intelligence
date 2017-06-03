@@ -18,6 +18,7 @@ from game import Directions
 from keyboardAgents import KeyboardAgent
 import inference
 import busters
+import sys
 
 class NullGraphics:
     "Placeholder for graphics"
@@ -162,5 +163,18 @@ class GreedyBustersAgent(BustersAgent):
         livingGhostPositionDistributions = \
             [beliefs for i, beliefs in enumerate(self.ghostBeliefs)
              if livingGhosts[i+1]]
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        bestAction = None
+        closestDistance = sys.maxint
+
+        for action in legal:
+            successorPacmanPosition = Actions.getSuccessor(pacmanPosition, action)
+
+            for distribution in livingGhostPositionDistributions:
+                mostLikelyPos = max(distribution, key=distribution.get)
+                distance = self.distancer.getDistance(successorPacmanPosition, mostLikelyPos)
+                if closestDistance > distance:
+                    closestDistance = distance
+                    bestAction = action
+
+        return bestAction

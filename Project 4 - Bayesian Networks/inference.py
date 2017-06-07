@@ -258,6 +258,7 @@ class ParticleFilter(InferenceModule):
         Storing your particles as a Counter (where there could be an associated
         weight with each position) is incorrect and may produce errors.
         """
+        # A particle is a pair (x, y) which represents the particle position on the grid
         self.particles = []
         numOfPos = len(self.legalPositions)
         particlesPerPos = self.numParticles / numOfPos
@@ -300,9 +301,9 @@ class ParticleFilter(InferenceModule):
         distribution = util.Counter()
         newParticles = []
 
-        for particlePos in self.particles:
-            distance = util.manhattanDistance(pacmanPosition, particlePos)
-            distribution[particlePos] += emissionModel[distance]
+        for particle in self.particles:
+            distance = util.manhattanDistance(pacmanPosition, particle)
+            distribution[particle] += emissionModel[distance]
 
         if noisyDistance is None:
             for i in range(self.numParticles):
@@ -331,8 +332,8 @@ class ParticleFilter(InferenceModule):
         """
         newParticles = []
 
-        for particlePos in self.particles:
-            newPosDist = self.getPositionDistribution(self.setGhostPosition(gameState, particlePos))
+        for particle in self.particles:
+            newPosDist = self.getPositionDistribution(self.setGhostPosition(gameState, particle))
             newPos = util.sample(newPosDist)
             newParticles.append(newPos)
 

@@ -484,20 +484,6 @@ class JointParticleFilter:
         a list, edited, and then converted back to a tuple. This is a common
         operation when placing a ghost in jail.
         """
-        pacmanPosition = gameState.getPacmanPosition()
-        noisyDistances = gameState.getNoisyGhostDistances()
-        if len(noisyDistances) < self.numGhosts:
-            return
-        emissionModels = [busters.getObservationDistribution(dist) for dist in noisyDistances]
-
-        # List of distributions: one for each ghost
-        distributions = [util.Counter() for _ in range(self.numGhosts)]
-
-        for particle in self.particles:
-            for ghost in range(self.numGhosts):
-                distance = util.manhattanDistance(pacmanPosition, particle[ghost])
-                distributions[ghost][particle[ghost]] += emissionModels[ghost][distance]
-
         def jailGhosts(particle):
             newParticle = list(particle)
             for ghost in range(self.numGhosts):
@@ -505,28 +491,37 @@ class JointParticleFilter:
                     newParticle[ghost] = self.getJailPosition(ghost)
             return tuple(newParticle)
 
-        # If a ghost distribution has 0 weight, recreated from the prior distribution
-        for ghost in range(self.numGhosts):
-            if distributions[ghost].totalCount() == 0:
-                self.initializeParticles()
-                self.particles = map(jailGhosts, self.particles)
-                return
+        pacmanPosition = gameState.getPacmanPosition()
+        noisyDistances = gameState.getNoisyGhostDistances()
+        if len(noisyDistances) < self.numGhosts:
+            return
+        emissionModels = [busters.getObservationDistribution(dist) for dist in noisyDistances]
+
+        # Distribution of particles
+        distribution = util.Counter()
+
+        for particle in self.particles:
+            prob = 1.0
+            for ghost in range(self.numGhosts):
+                if noisyDistances[ghost] is not None:
+                    distance = util.manhattanDistance(pacmanPosition, particle[ghost])
+                    prob *= emissionModels[ghost][distance]
+            distribution[particle] += prob
+
+        # If all particles have 0 weight, recreate from the prior distribution
+        if distribution.totalCount() == 0:
+            self.initializeParticles()
+            self.particles = map(jailGhosts, self.particles)
+            return
 
         newParticles = []
 
         for i in range(self.numParticles):
-            particle = [(0, 0) for _ in range(self.numGhosts)]
-
-            for ghost in range(self.numGhosts):
-                particle[ghost] = util.sample(distributions[ghost])
-                jailGhosts(particle)
-
+            particle = util.sample(distribution)
+            particle = jailGhosts(particle)
             newParticles.append(tuple(particle))
 
         self.particles = newParticles
-
-
-
 
     def getParticleWithGhostInJail(self, particle, ghostIndex):
         """
